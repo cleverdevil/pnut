@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import json
+
+from pnut import atv
+
+conf_path = sys.argv[1]
+
+with open(f'{os.getcwd()}/{conf_path}') as f:
+    data = f.read()
+    device = json.loads(data)
+    atv.set_device_config(device)
+
+atv.main()

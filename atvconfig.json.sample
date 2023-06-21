@@ -1,0 +1,16 @@
+{
+  "name": "Home Theater",
+  "identifiers": [
+    "AA:BB:CC:DD:EE:FF",
+    "AABBCCDDEEFF"
+  ],
+  "credentials": {
+    "AirPlay": "",
+    "Companion": "",
+    "RAOP": ""
+  },
+  "service": {
+    "host": "localhost",
+    "port": "8080"
+  }
+}

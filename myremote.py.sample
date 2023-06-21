@@ -1,0 +1,232 @@
+import string
+import config
+import functools
+import homeassistant_api as hass
+
+from pnut.atv import ATVService
+from pnut import remote
+
+# create Home Assistant API client
+hass_client = hass.Client(
+    config.HASS_URL,
+    config.HASS_TOKEN,
+    cache_session=False
+)
+
+# create all of the devices that I want to control
+apple_tv = remote.AppleTV(
+    hass_client,
+    'home_theater_2',
+    ATVService('localhost', '8080')
+)
+zidoo = remote.Zidoo(hass_client, 'media_player.z9x')
+receiver = remote.Receiver(
+    hass_client,
+    'media_player.home_theater_receiver',
+    default_source='Apple TV'
+)
+lighting = remote.Lighting(hass_client)
+fan = remote.Fan(hass_client, 'fan.ceiling_fan')
+projector = remote.HassScriptDevice(hass_client, button_map={
+    'up': 'projector_up',
+    'down': 'projector_down',
+    'left': 'projector_left',
+    'right': 'projector_right',
+    'ok': 'projector_ok',
+    'back': 'projector_back',
+    'menu': 'projector_menu',
+    'settings': 'projector_settings',
+    'source': 'projector_source'
+})
+
+# create any helper functions
+def lights_off():
+    lighting.home_theater_main_lights.turn_off()
+    lighting.stairs_main_lights.turn_off()
+
+def lights_on():
+    lighting.home_theater_main_lights.turn_on()
+    lighting.home_theater_main_lights.turn_on()
+
+# create the mapping between buttons that are pressed and actions by source
+button_map={
+    'SLOMO': {
+        apple_tv: apple_tv.play_pause,
+        zidoo: None
+    },
+    'PLAY': {
+        apple_tv: apple_tv.play,
+        zidoo: zidoo.play
+    },
+    'TIVO': {
+        apple_tv: apple_tv.top_menu,
+        zidoo: zidoo.home
+    },
+    'TVPWR': {
+        apple_tv: apple_tv.power_toggle,
+        zidoo: apple_tv.suspend
+    },
+    'LIVETV': {
+        apple_tv: lambda: apple_tv.launch_app('com.google.ios.youtubeunplugged'),
+        zidoo: None
+    },
+    'INFO': {
+        apple_tv: None,
+        zidoo: zidoo.info
+    },
+    'ZOOM': {
+        apple_tv: lambda: remote.chain(apple_tv.top_menu, apple_tv.top_menu),
+        zidoo: None
+    },
+    'INPUT': {
+        apple_tv: functools.partial(receiver.set_active_source, 'Zidoo Z9X'),
+        zidoo: functools.partial(receiver.set_active_source, 'Apple TV')
+    },
+    'BACK': {
+        apple_tv: apple_tv.menu,
+        zidoo: zidoo.back
+    },
+    'UP': {
+        apple_tv: apple_tv.up,
+        zidoo: zidoo.up
+    },
+    'LEFT': {
+        apple_tv: apple_tv.left,
+        zidoo: zidoo.left
+    },
+    'RIGHT': {
+        apple_tv: apple_tv.right,
+        zidoo: zidoo.right
+    },
+    'SELECT': {
+        apple_tv: apple_tv.select,
+        zidoo: zidoo.ok
+    },
+    'CHUP': {
+        apple_tv: apple_tv.channel_up,
+        zidoo: zidoo.page_up
+    },
+    'CHDOWN': {
+        apple_tv: apple_tv.channel_down,
+        zidoo: zidoo.page_down
+    },
+    'VOLUP': {
+        apple_tv: receiver.volume_up,
+        zidoo: receiver.volume_up
+    },
+    'VOLDOWN': {
+        apple_tv: receiver.volume_down,
+        zidoo: receiver.volume_down
+    },
+    'GUIDE': {
+        apple_tv: lambda: apple_tv.launch_app('com.google.ios.youtubeunplugged'),
+        zidoo: lambda: zidoo.launch_app('Home Theater 4.0')
+    },
+    'MUTE': {
+        apple_tv: receiver.mute,
+        zidoo: receiver.mute
+    },
+    'REC': {
+        apple_tv: None,
+        zidoo: None
+    },
+    'THUMBUP': {
+        apple_tv: fan.turn_up,
+        zidoo: fan.turn_up
+    },
+    'THUMBDOWN': {
+        apple_tv: fan.turn_down,
+        zidoo: fan.turn_down
+    },
+    'DOWN': {
+        apple_tv: apple_tv.down,
+        zidoo: zidoo.down
+    },
+    'FWD': {
+        apple_tv: apple_tv.right,
+        zidoo: zidoo.forward
+    },
+    'RWD': {
+        apple_tv: apple_tv.left,
+        zidoo: zidoo.backward
+    },
+    'PAUSE': {
+        apple_tv: apple_tv.play_pause,
+        zidoo: zidoo.pause
+    },
+    'SKIPFWD': {
+        apple_tv: apple_tv.skip_forward,
+        zidoo: zidoo.forward
+    },
+    'SKIPBACK': {
+        apple_tv: apple_tv.skip_backward,
+        zidoo: zidoo.backward
+    },
+    'YELLOW': {
+        apple_tv: lambda: apple_tv.launch_app('com.plexapp.plex'),
+        zidoo: None
+    },
+    'BLUE': {
+        apple_tv: lambda: apple_tv.launch_app('com.disney.disneyplus'),
+        zidoo: None
+    },
+    'RED': {
+        apple_tv: lights_off,
+        zidoo: lights_off
+    },
+    'GREEN': {
+        apple_tv: lights_on,
+        zidoo: lights_on
+    },
+    'ENTER': {
+        apple_tv: apple_tv.select,
+        zidoo: zidoo.menu
+    },
+    'SLIDE_UP': {
+        apple_tv: projector.up,
+        zidoo: projector.up
+    },
+    'SLIDE_DOWN': {
+        apple_tv: projector.down,
+        zidoo: projector.down
+    },
+    'SLIDE_LEFT': {
+        apple_tv: projector.left,
+        zidoo: projector.left
+    },
+    'SLIDE_RIGHT': {
+        apple_tv: projector.right,
+        zidoo: projector.right
+    },
+    'SLIDE_SELECT': {
+        apple_tv: projector.ok,
+        zidoo: projector.ok
+    },
+    'SLIDE_CLEAR': {
+        apple_tv: projector.back,
+        zidoo: projector.back
+    },
+    'SLIDE_SEARCH': {
+        apple_tv: projector.settings,
+        zidoo: projector.settings
+    },
+    'CLEAR': {
+        apple_tv: apple_tv.clear_text,
+        zidoo: None
+    }
+}
+
+# map all keyboard button presses to text entry by source
+for character in string.ascii_letters + string.punctuation + ' ':
+    button_map[character] = {
+        apple_tv: lambda: apple_tv.append_text(character),
+        zidoo: None
+    }
+
+# instantiate a univeral remote instance with the button map and sources
+my_remote = remote.UniversalRemote(
+    sources={'Apple TV': apple_tv, 'Zidoo Z9X': zidoo},
+    source_control=receiver,
+    source_default=apple_tv,
+    button_map=button_map
+)
