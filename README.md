@@ -39,7 +39,7 @@ hass_client = hass.Client(
 apple_tv = remote.AppleTV(
     hass_client,
     'living_room',
-    atv.ATVServe('localhost', '8080')
+    atv.ATVService('localhost', '8080')
 )
 
 receiver = remote.Receiver(
