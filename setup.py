@@ -12,7 +12,14 @@ setup(
         "requests",
         "pyatv",
         "aiohttp",
-        "hidapi"
+        "hidapi",
+        "idna",
+        "urllib3",
+        "certifi",
+        "cffi",
+        "six",
+        "mutagen",
+        "aiohttp_client_cache"
     ],
     zip_safe=False,
     include_package_data=True,
