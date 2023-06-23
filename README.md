@@ -27,7 +27,7 @@ the PNut building blocks. Here is an extremely simple example, which we'll place
 into `myremote.py`.
 
 ```python
-from homeassistant_api as hass
+import homeassistant_api as hass
 from pnut import remote, atv
 
 hass_client = hass.Client(
