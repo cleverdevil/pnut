@@ -128,8 +128,9 @@ class ActionScheduler(threading.Thread):
                     continue
                 else:
                     action.execute(self)
-            except:
+            except Exception as ex:
                 logging.info('Encountered exception in scheduler.')
+                logging.info(str(ex))
 
 
 class Action:
@@ -141,8 +142,9 @@ class Action:
         def _target(*args, **kw):
             try:
                 target(*args, **kw)
-            except:
+            except Exception as ex:
                 logging.info('Action failed')
+                logging.info(str(ex))
 
         self.target = _target
 

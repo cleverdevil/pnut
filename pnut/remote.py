@@ -246,7 +246,7 @@ class HassScriptDevice:
         self.button_map = button_map
 
         for cmd, script_cmd in button_map.items():
-            setattr(self, cmd, functools.partialmethod(self._cmd, script_cmd))
+            setattr(self, cmd, functools.partial(self._cmd, script_cmd))
 
 
 class AppleTV(Device):
