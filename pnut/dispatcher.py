@@ -96,7 +96,8 @@ class TiVoRemoteDispatcher(threading.Thread):
 
             # create a target callable for the match
             def target(**kwargs):
-                REMOTE.press_button(match['value'], **kwargs)
+                if match is not None:
+                    REMOTE.press_button(match['value'], **kwargs)
 
             # create and schedule our action
             action = self._create_action(match, target)
@@ -124,7 +125,9 @@ class ActionScheduler(threading.Thread):
                 try:
                     action = self.queue.get(timeout=3600)
                 except queue.Empty:
-                    REMOTE.remote.keep_alive()
+                    continue
+                except Exception as ex:
+                    logging.info(str(ex))
                     continue
                 else:
                     action.execute(self)
