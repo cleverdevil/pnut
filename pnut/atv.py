@@ -39,7 +39,10 @@ class ATVService:
 
 
     def keyboard_enter(self, character):
-        response = requests.get(f'{self.BASE_URL}/keyboard_enter/{character}')
+        response = requests.post(
+            f'{self.BASE_URL}/keyboard_enter',
+            data={'character': character}
+        )
         return True if response else False
 
 
@@ -145,15 +148,15 @@ async def power_toggle(request, atv):
     return web.Response(text='OK')
 
 
-@routes.get('/keyboard_enter/{character}')
+@routes.post('/keyboard_enter')
 @web_command
 async def keyboard_enter(request, atv):
     '''
     Append text via virtual keyboard.
     '''
-
     try:
-        await atv.keyboard.text_append(request.match_info['character'])
+        data = await request.post()
+        await atv.keyboard.text_append(data['character'])
     except:
         del request.app['atv']['client']
         return web.Response(status=500, text='Failed to send text')

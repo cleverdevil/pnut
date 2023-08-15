@@ -48,6 +48,14 @@ def lights_on():
     lighting.home_theater_main_lights.turn_on()
     lighting.home_theater_main_lights.turn_on()
 
+def lights_up():
+    lighting.home_theater_main_lights.turn_up()
+    lighting.stairs_main_lights.turn_up()
+
+def lights_down():
+    lighting.home_theater_main_lights.turn_down()
+    lighting.stairs_main_lights.turn_down()
+
 # create the mapping between buttons that are pressed and actions by source
 button_map={
     'SLOMO': {
@@ -163,12 +171,12 @@ button_map={
         zidoo: zidoo.backward
     },
     'YELLOW': {
-        apple_tv: lambda: apple_tv.launch_app('com.plexapp.plex'),
-        zidoo: None
+        apple_tv: lights_down,
+        zidoo: lights_down
     },
     'BLUE': {
-        apple_tv: lambda: apple_tv.launch_app('com.disney.disneyplus'),
-        zidoo: None
+        apple_tv: lights_up,
+        zidoo: lights_up
     },
     'RED': {
         apple_tv: lights_off,
@@ -210,7 +218,7 @@ button_map={
         apple_tv: projector.settings,
         zidoo: projector.settings
     },
-    'CLEAR': {
+    "CLEAR": {
         apple_tv: apple_tv.clear_text,
         zidoo: None
     }
@@ -218,10 +226,14 @@ button_map={
 
 # map all keyboard button presses to text entry by source
 for character in string.ascii_letters + string.punctuation + ' ':
+    def enter(c, client):
+        return lambda: client.append_text(c)
+
     button_map[character] = {
-        apple_tv: lambda: apple_tv.append_text(character),
+        apple_tv: enter(character, apple_tv),
         zidoo: None
     }
+
 
 # instantiate a univeral remote instance with the button map and sources
 my_remote = remote.UniversalRemote(
